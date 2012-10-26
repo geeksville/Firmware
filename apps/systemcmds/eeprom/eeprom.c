@@ -52,6 +52,7 @@
 
 #include <nuttx/i2c.h>
 #include <nuttx/mtd.h>
+#include "24xxxx_mtd.h"
 #include <nuttx/fs/nxffs.h>
 #include <nuttx/fs/ioctl.h>
 
@@ -65,10 +66,14 @@
 #  error PX4_I2C_BUS_ONBOARD not defined, cannot locate onboard EEPROM
 #endif
 
+
+
 __EXPORT int eeprom_main(int argc, char *argv[]);
 
 static void	eeprom_attach(void);
 static void	eeprom_start(void);
+static void	eeprom_baseboard_attach(void);
+static void	eeprom_baseboard_start(void);
 static void	eeprom_erase(void);
 static void	eeprom_ioctl(unsigned operation);
 static void	eeprom_save(const char *name);
@@ -78,11 +83,26 @@ static bool attached = false;
 static bool started = false;
 static struct mtd_dev_s *eeprom_mtd;
 
+static bool baseboard_attached = false;
+static bool baseboard_started = false;
+static struct mtd_dev_s *eeprom_baseboard;
+
 int eeprom_main(int argc, char *argv[])
 {
 	if (argc >= 2) {
-		if (!strcmp(argv[1], "start"))
-			eeprom_start();
+		if (!strcmp(argv[1], "start")) {
+			if (argc >= 3) {
+				if (!strcmp(argv[2], "baseboard")) {
+					eeprom_baseboard_start();
+				}
+				if (!strcmp(argv[2], "onboard")) {
+					eeprom_start();
+				}
+			} else {
+				/* default to FMU EEPROM */
+				eeprom_start();
+			}
+		}
 
 		if (!strcmp(argv[1], "save_param"))
 			eeprom_save(argv[2]);
@@ -116,10 +136,10 @@ eeprom_attach(void)
 	I2C_SETFREQUENCY(i2c, 400000);
 
 	if (i2c == NULL)
-		errx(1, "failed to locate I2C bus");
+		errx(1, "failed to locate I2C%d bus", PX4_I2C_BUS_ONBOARD);
 
 	/* start the MTD driver */
-	eeprom_mtd = at24c_initialize(i2c);
+	eeprom_mtd = at24c_initialize_ext(i2c, 0x50, 64, 256);
 
 	if (eeprom_mtd == NULL)
 		errx(1, "failed to initialize EEPROM driver");
@@ -152,6 +172,56 @@ eeprom_start(void)
 
 	started = true;
 	warnx("mounted EEPROM at /eeprom");
+	exit(0);
+}
+
+static void
+eeprom_baseboard_attach(void)
+{
+	/* find the right I2C */
+	// XXX add proper define
+	const unsigned bus = 3;
+	struct i2c_dev_s *i2c = up_i2cinitialize(bus);
+	/* this resets the I2C bus, set correct bus speed again */
+	I2C_SETFREQUENCY(i2c, 400000);
+
+	if (i2c == NULL)
+		errx(1, "failed to locate I2C%u bus", bus);
+
+	/* start the MTD for 128 bytes / 8 bytes page size / 16 pages driver at addr. 0x57 */
+	eeprom_baseboard = at24c_initialize_ext(i2c, 0x57, 8, 16);
+
+	if (eeprom_baseboard == NULL)
+		errx(1, "failed to initialize EEPROM driver");
+
+	baseboard_attached = true;
+}
+
+static void
+eeprom_baseboard_start(void)
+{
+	int ret;
+
+	if (baseboard_started)
+		errx(1, "EEPROM already mounted");
+
+	if (!baseboard_attached)
+		eeprom_baseboard_attach();
+
+	/* start NXFFS */
+	ret = nxffs_initialize(eeprom_baseboard);
+
+	if (ret < 0)
+		errx(1, "failed to initialize NXFFS - erase EEPROM to reformat");
+
+	/* mount the EEPROM */
+	ret = mount(NULL, "/baseboard_eeprom", "nxffs", 0, NULL);
+
+	if (ret < 0)
+		errx(1, "failed to mount /baseboard_eeprom - erase EEPROM to reformat");
+
+	baseboard_started = true;
+	warnx("mounted EEPROM at /baseboard_eeprom");
 	exit(0);
 }
 
