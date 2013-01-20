@@ -612,6 +612,9 @@ PX4IO::io_send()
 
 	cmd.f2i_magic = F2I_MAGIC;
 
+	// advertise the armed state
+	orb_advertise(ORB_ID(actuator_armed), &_armed);
+
 	/* set outputs */
 	for (unsigned i = 0; i < _max_actuators; i++) {
 		cmd.output_control[i] = _outputs.output[i];
@@ -742,6 +745,7 @@ PX4IO::ioctl(file *filep, int cmd, unsigned long arg)
 	case PWM_SERVO_ARM:
 		/* fake an armed transition */
 		_armed.armed = true;
+		_armed.lockdown = false;
 		_send_needed = true;
 		break;
 
