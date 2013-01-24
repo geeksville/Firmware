@@ -94,11 +94,10 @@ private:
 	int			sync();
 	int			get_info(int param, uint32_t &val);
 	int			erase();
-	int			program();
-	int			verify_rev2();
-	int			verify_rev3();
+	int			program(size_t fw_size);
+	int			verify_rev2(size_t fw_size);
+	int			verify_rev3(size_t fw_size);
 	int			reboot();
-	int			compare(bool &identical);
 };
 
 #endif
