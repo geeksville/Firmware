@@ -1014,6 +1014,16 @@ PX4IO::ioctl(file *filep, int cmd, unsigned long arg)
 		ret = io_reg_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_SET_DEBUG, arg);
 		break;
 
+	case PWM_IO_SET_FEATURES: {
+		/* set the feature flags in px4io firmware */
+		uint32_t features = 0;
+		if (arg & PWM_IO_FEATURE_ARM_OK)           features |= PX4IO_P_SETUP_ARMING_ARM_OK;
+		if (arg & PWM_IO_FEATURE_MANUAL_OVERRIDE)  features |= PX4IO_P_SETUP_ARMING_MANUAL_OVERRIDE;
+		if (arg & PWM_IO_FEATURE_VECTOR_FLIGHT_OK) features |= PX4IO_P_SETUP_ARMING_VECTOR_FLIGHT_OK;
+		ret = io_reg_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FEATURES, features);
+		break;
+	}
+
 	case PWM_SERVO_SET(0) ... PWM_SERVO_SET(PWM_OUTPUT_MAX_CHANNELS): {
 
 		unsigned channel = cmd - PWM_SERVO_SET(0);
