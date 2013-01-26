@@ -65,6 +65,7 @@ static struct hrt_call serial_dma_call;
 
 // global debug level for isr_debug()
 volatile uint8_t debug_level = 0;
+
 volatile uint32_t i2c_resets = 0;
 volatile uint32_t i2c_loop_resets = 0;
 
