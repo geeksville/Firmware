@@ -90,6 +90,10 @@ mixer_tick(void)
 	/* check that we are receiving fresh data from the FMU */
 	if ((hrt_absolute_time() - system_state.fmu_data_received_time) > FMU_INPUT_DROP_LIMIT_US) {
 
+		if (r_status_flags & PX4IO_P_STATUS_FLAGS_FMU_OK) {
+			debug("AP RX timeout");
+		}
+
 		/* too long without FMU input, time to go to failsafe */
 		if (r_status_flags & PX4IO_P_STATUS_FLAGS_FMU_OK) {
 			debug("AP RX timeout");
