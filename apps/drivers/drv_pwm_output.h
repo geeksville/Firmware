@@ -109,6 +109,13 @@ ORB_DECLARE(output_pwm);
 /** set debug level for servo IO */
 #define PWM_SERVO_SET_DEBUG	_IOC(_PWM_SERVO_BASE, 4)
 
+/** set IO features */
+#define PWM_IO_SET_FEATURES	_IOC(_PWM_SERVO_BASE, 5)
+
+#define PWM_IO_FEATURE_ARM_OK            (1 << 0)
+#define PWM_IO_FEATURE_MANUAL_OVERRIDE   (1 << 2)
+#define PWM_IO_FEATURE_VECTOR_FLIGHT_OK  (1 << 3)
+
 /** set a single servo to a specific value */
 #define PWM_SERVO_SET(_servo)	_IOC(_PWM_SERVO_BASE, 0x20 + _servo)
 
