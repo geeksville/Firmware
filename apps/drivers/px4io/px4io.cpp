@@ -325,7 +325,10 @@ PX4IO::init()
 	    (_max_relays < 1)    || (_max_relays > 255)    ||
 	    (_max_transfer < 16)   || (_max_transfer > 255)    ||
 	    (_max_rc_input < 1)  || (_max_rc_input > 255)) {
-
+		log("_max_actuators=%u", (unsigned)_max_actuators);
+		log("_max_relays=%u",    (unsigned)_max_relays);
+		log("_max_transfer=%u",  (unsigned)_max_transfer);
+		log("_max_rc_input=%u",  (unsigned)_max_rc_input);
 		log("failed getting parameters from PX4IO");
 		return -1;
 	}
@@ -639,6 +642,9 @@ PX4IO::io_get_status()
 	if (ret != OK)
 		return ret;
 
+	if (regs[0] != _status) {
+		printf("_status=0x%x\n", (unsigned)regs[0]);
+	}
 	_status = regs[0];
 	_alarms = regs[1];
 
@@ -883,7 +889,9 @@ PX4IO::io_reg_get(uint8_t page, uint8_t offset, uint16_t *values, unsigned num_v
 	/* perform the transfer */
 	int ret = transfer(msgv, 2);
 	if (ret != OK)
-		debug("io_reg_get: data error %d", ret);
+		debug("io_reg_get(%u,%u,%u) ->  %d", 
+		      (unsigned)page, (unsigned)offset, 
+		      (unsigned)num_values, ret);
 	return ret;
 }
 
