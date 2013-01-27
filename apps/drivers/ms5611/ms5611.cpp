@@ -686,8 +686,6 @@ MS5611::collect()
 	/* this should be fairly close to the end of the conversion, so the best approximation of the time */
 	_reports[_next_report].timestamp = hrt_absolute_time();
 
-	/* it's OK to retry on collection, as it has no side-effects */
-	_retries = 3;
 	ret = transfer(&cmd, 1, &data[0], 3);
 	if (ret != OK) {
 		perf_count(_comms_errors);
