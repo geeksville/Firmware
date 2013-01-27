@@ -162,7 +162,7 @@ private:
 	 * @note This function is called at open and error time.  It might make sense
 	 *       to make it more aggressive about resetting the bus in case of errors.
 	 */
-	void			start();
+	void			start_cycle();
 
 	/**
 	 * Stop the automatic measurement state machine.
@@ -458,7 +458,7 @@ MS5611::ioctl(struct file *filp, int cmd, unsigned long arg)
 
 					/* if we need to start the poll state machine, do it */
 					if (want_start)
-						start();
+						start_cycle();
 
 					return OK;
 				}
@@ -480,7 +480,7 @@ MS5611::ioctl(struct file *filp, int cmd, unsigned long arg)
 
 					/* if we need to start the poll state machine, do it */
 					if (want_start)
-						start();
+						start_cycle();
 
 					return OK;
 				}
@@ -512,7 +512,7 @@ MS5611::ioctl(struct file *filp, int cmd, unsigned long arg)
 			delete[] _reports;
 			_num_reports = arg;
 			_reports = buf;
-			start();
+			start_cycle();
 
 			return OK;
 		}
@@ -545,7 +545,7 @@ MS5611::ioctl(struct file *filp, int cmd, unsigned long arg)
 }
 
 void
-MS5611::start()
+MS5611::start_cycle()
 {
 
 	/* reset the report ring and state machine */
@@ -584,7 +584,7 @@ MS5611::cycle()
 		if (ret != OK) {
 			log("collection error %d", ret);
 			/* reset the collection state machine and try again */
-			start();
+			start_cycle();
 			return;
 		}
 
@@ -615,7 +615,7 @@ MS5611::cycle()
 	if (ret != OK) {
 		log("measure error %d", ret);
 		/* reset the collection state machine and try again */
-		start();
+		start_cycle();
 		return;
 	}
 
