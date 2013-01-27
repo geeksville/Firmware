@@ -331,7 +331,7 @@ MS5611::probe()
 
 	if ((OK == probe_address(MS5611_ADDRESS_1)) ||
 	    (OK == probe_address(MS5611_ADDRESS_2))) {
-		_retries = 2;
+		_retries = 0;
 		return OK;
 	}
 
