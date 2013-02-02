@@ -221,19 +221,23 @@ static int uart_putxmitchar(FAR uart_dev_t *dev, int ch)
 
           if (dev->disconnected)
             {
-              irqrestore(flags);
-              return -ENOTCONN;
+              ret = -ENOTCONN;
             }
+          else
 #endif
-          /* Wait for some characters to be sent from the buffer with the TX
-           * interrupt enabled.  When the TX interrupt is enabled, uart_xmitchars
-           * should execute and remove some of the data from the TX buffer.
-           */
+            {
+              /* Wait for some characters to be sent from the buffer with
+               * the TX interrupt enabled.  When the TX interrupt is
+               * enabled, uart_xmitchars should execute and remove some
+               * of the data from the TX buffer.
+               */
 
-          dev->xmitwaiting = true;
-          uart_enabletxint(dev);
-          ret = uart_takesem(&dev->xmitsem, true);
-          uart_disabletxint(dev);
+              dev->xmitwaiting = true;
+              uart_enabletxint(dev);
+              ret = uart_takesem(&dev->xmitsem, true);
+              uart_disabletxint(dev);
+            }
+
           irqrestore(flags);
 
 #ifdef CONFIG_SERIAL_REMOVABLE
@@ -671,29 +675,30 @@ static ssize_t uart_read(FAR struct file *filep, FAR char *buffer, size_t buflen
                */
 
               flags = irqsave();
+              uart_enablerxint(dev);
 
 #ifdef CONFIG_SERIAL_REMOVABLE
-              /* Check if the removable device is no longer connected while
-               * we have interrupts off.  We do not want the transition to
-               * occur as a race condition before we begin the wait.
+              /* Check again if the removable device is still connected
+               * while we have interrupts off.  We do not want the transition
+               * to occur as a race condition before we begin the wait.
                */
 
               if (dev->disconnected)
-               {
-                  uart_enablerxint(dev);
-                  irqrestore(flags);
+                {
                   ret = -ENOTCONN;
-                  break;
                 }
+              else
 #endif
-              /* Now wait with the Rx interrupt re-enabled.  NuttX will
-               * automatically re-enable global interrupts when this thread
-               * goes to sleep.
-               */
+               {
+                  /* Now wait with the Rx interrupt re-enabled.  NuttX will
+                   * automatically re-enable global interrupts when this
+                   * thread goes to sleep.
+                   */
 
-              dev->recvwaiting = true;
-              uart_enablerxint(dev);
-              ret = uart_takesem(&dev->recvsem, true);
+                  dev->recvwaiting = true;
+                  ret = uart_takesem(&dev->recvsem, true);
+                }
+
               irqrestore(flags);
 
               /* Was a signal received while waiting for data to be
