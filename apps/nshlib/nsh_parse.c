@@ -1429,8 +1429,10 @@ int nsh_parse(FAR struct nsh_vtbl_s *vtbl, char *cmdline)
 
       /* Free the redirected output file path */
 
-      nsh_freefullpath(redirfile);
-      redirfile = NULL;
+      if (redirfile)
+        {
+          nsh_freefullpath(redirfile);
+        }
 
       /* Save the result:  success if 0; failure if 1 */
 
@@ -1470,8 +1472,10 @@ int nsh_parse(FAR struct nsh_vtbl_s *vtbl, char *cmdline)
 
       /* Free the redirected output file path */
 
-      nsh_freefullpath(redirfile);
-      redirfile = NULL;
+      if (redirfile)
+        {
+          nsh_freefullpath(redirfile);
+        }
 
       /* Save the result:  success if 0; failure if 1 */
 
@@ -1598,6 +1602,12 @@ int nsh_parse(FAR struct nsh_vtbl_s *vtbl, char *cmdline)
           nsh_release(bkgvtbl);
           goto errout;
         }
+
+      /* Detach from the pthread since we are not going to join with it.
+       * Otherwise, we would have a memory leak.
+       */
+
+      (void)pthread_detach(thread);
 
       nsh_output(vtbl, "%s [%d:%d]\n", cmd, thread, param.sched_priority);
     }
