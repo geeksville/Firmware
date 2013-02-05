@@ -544,9 +544,9 @@ PX4IO::io_set_arming_state()
 		clear |= PX4IO_P_SETUP_ARMING_VECTOR_FLIGHT_OK;					
 	}
 	if (vstatus.flag_external_manual_override_ok) {
-		set |= PX4IO_P_SETUP_ARMING_MANUAL_OVERRIDE;
+		set |= PX4IO_P_FEAT_ARMING_MANUAL_OVERRIDE_OK;
 	} else {
-		clear |= PX4IO_P_SETUP_ARMING_MANUAL_OVERRIDE;
+		clear |= PX4IO_P_FEAT_ARMING_MANUAL_OVERRIDE_OK;
 	}
 
 	return io_reg_modify(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, clear, set);
@@ -1237,6 +1237,10 @@ monitor(void)
 int
 px4io_main(int argc, char *argv[])
 {
+	/* check for sufficient number of arguments */
+	if (argc < 2)
+		goto out;
+
 	if (!strcmp(argv[1], "start")) {
 
 		if (g_dev != nullptr)
@@ -1374,5 +1378,6 @@ px4io_main(int argc, char *argv[])
 	if (!strcmp(argv[1], "monitor"))
 		monitor();
 
+	out:
 	errx(1, "need a command, try 'start', 'stop', 'status', 'test', 'monitor', 'debug' or 'update'");
 }
