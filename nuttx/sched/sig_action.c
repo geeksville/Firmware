@@ -169,7 +169,6 @@ int sigaction(int signo, FAR const struct sigaction *act, FAR struct sigaction *
 {
   FAR _TCB      *rtcb = (FAR _TCB*)g_readytorun.head;
   FAR sigactq_t *sigact;
-  int            ret;
 
   /* Since sigactions can only be installed from the running thread of
    * execution, no special precautions should be necessary.
@@ -294,7 +293,7 @@ int sigaction(int signo, FAR const struct sigaction *act, FAR struct sigaction *
       COPY_SIGACTION(&sigact->act, act);
     }
 
-  return ret;
+  return OK;
 }
 
 /****************************************************************************
