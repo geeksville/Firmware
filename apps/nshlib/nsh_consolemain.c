@@ -94,7 +94,7 @@
  *  
  ****************************************************************************/
 
-int nsh_consolemain(int argc, char *argv[])
+int nsh_consolemain(int argc, char *argv[], bool run_init_scripts)
 {
   FAR struct console_stdio_s *pstate = nsh_newconsole();
   int ret;
@@ -117,9 +117,11 @@ int nsh_consolemain(int argc, char *argv[])
 
   /* Execute the startup script */
 
+  if (run_init_scripts) {
 #ifdef CONFIG_NSH_ROMFSETC
-  (void)nsh_script(&pstate->cn_vtbl, "init", NSH_INITPATH);
+	  (void)nsh_script(&pstate->cn_vtbl, "init", NSH_INITPATH);
 #endif
+  }
 
   /* Then enter the command line parsing loop */
 

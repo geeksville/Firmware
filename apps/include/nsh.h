@@ -96,6 +96,7 @@ EXTERN void nsh_initialize(void);
  * Input Parameters:
  *   Standard task start-up arguements.  These are not used.  argc may be
  *   zero and argv may be NULL.
+ *   run_init_scripts: set to true to run init scripts
  *
  * Returned Values:
  *   This function does not normally return.  exit() is usually called to
@@ -104,7 +105,7 @@ EXTERN void nsh_initialize(void);
  *  
  ****************************************************************************/
 
-EXTERN int nsh_consolemain(int argc, char *argv[]);
+EXTERN int nsh_consolemain(int argc, char *argv[], bool run_init_scripts);
 
 /* nsh_telnetstart() starts a telnet daemon that will allow multiple
  * NSH connections via telnet.  This function returns immediately after
