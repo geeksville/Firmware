@@ -613,7 +613,7 @@ static ssize_t uart_read(FAR struct file *filep, FAR char *buffer, size_t buflen
        * return what we have.
        */
 
-      else if (filep->f_oflags & O_NONBLOCK)
+      else if ((filep->f_oflags & O_NONBLOCK) != 0)
         {
           /* If nothing was transferred, then return the -EAGAIN
            * error (not zero which means end of file).
@@ -645,7 +645,7 @@ static ssize_t uart_read(FAR struct file *filep, FAR char *buffer, size_t buflen
        * wait.
        */
 
-      else if (filep->f_oflags & O_NONBLOCK)
+      else if ((filep->f_oflags & O_NONBLOCK) != 0)
         {
           /* Break out of the loop returning -EAGAIN */
 
@@ -1339,7 +1339,9 @@ void uart_connected(FAR uart_dev_t *dev, bool connected)
 {
   irqstate_t flags;
 
-  /* Is the device disconnected? */
+  /* Is the device disconnected?  Interrupts are disabled because this
+   * function may be called from interrupt handling logic.
+   */
 
   flags = irqsave();
   dev->disconnected = !connected;

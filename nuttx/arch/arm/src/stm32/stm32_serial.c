@@ -989,6 +989,8 @@ static void up_set_format(struct uart_dev_s *dev)
      }
    else
      {
+       DEBUGASSERT(usartdiv8 >= 8);
+
        /* Perform mysterious operations on bits 0-3 */
 
        brr  = ((usartdiv8 & 0xfff0) | ((usartdiv8 & 0x000f) >> 1));
