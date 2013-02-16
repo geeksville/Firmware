@@ -308,6 +308,15 @@ config ARCH_BOARD_MIRTOO
 		This is the port to the DTX1-4000L "Mirtoo" module.  This module uses MicroChip
 		PIC32MX250F128D.  See http://www.dimitech.com/ for further information.
 
+config ARCH_BOARD_NUTINY_NUC120
+	bool "Nuvoton NuTiny NUC120"
+	depends on ARCH_CHIP_NUC120LE3AN
+	select ARCH_HAVE_LEDS
+	---help---
+		This is the port to the Nuvoton NuTiny EVB 120 board.  This board uses a 
+		Nuvoton NUC120 chip, specifically the NUC120LE3AN.  See http://www.nuvoton.com/
+		for further information.
+
 config ARCH_BOARD_OLIMEXLPC2378
 	bool "Olimex-lpc2378 board"
 	depends on ARCH_CHIP_LPC2378
@@ -656,11 +665,8 @@ endchoice
 
 config ARCH_BOARD
 	string
-<<<<<<< HEAD
 	default "px4fmu"             if ARCH_BOARD_PX4FMU
 	default "px4io"              if ARCH_BOARD_PX4IO
-	default ""                   if ARCH_BOARD_CUSTOM
-=======
 	default "amber"               if ARCH_BOARD_AMBER
 	default "avr32dev1"           if ARCH_BOARD_AVR32DEV1
 	default "c5471evm"            if ARCH_BOARD_C5471EVM
@@ -691,6 +697,7 @@ config ARCH_BOARD
 	default "ne64badge"           if ARCH_BOARD_NE64BADGE
 	default "ntosd-dm320"         if ARCH_BOARD_NTOSD_DM320
 	default "nucleus2g"           if ARCH_BOARD_NUCLEUS2G
+	default "nutiny-nuc120"       if ARCH_BOARD_NUTINY_NUC120
 	default "olimex-lpc1766stk"   if ARCH_BOARD_LPC1766STK
 	default "olimex-lpc2378"      if ARCH_BOARD_OLIMEXLPC2378
 	default "olimex-stm32-p107"   if ARCH_BOARD_OLIMEX_STM32P107
@@ -766,6 +773,208 @@ config NSH_MMCSDMINOR
 	---help---
 		If board-specific NSH start-up logic needs to mount an MMC/SD device, then the setting should be provided to identify the MMC/SD minor device number (i.e., the N in /dev/mmcsdN).  Default 0
 
+config NSH_MMCSDSLOTNO
+	int "MMC/SD slot number"
+	default 0
+	depends on NSH_LIBRARY && MMCSD
+	---help---
+		If board-specific NSH start-up supports more than one MMC/SD slot, then this setting should be provided to indicate which slot should be used.  Default: 0.
+
+config NSH_MMCSDSPIPORTNO
+	int "MMC/SD SPI device number"
+	default 0
+	depends on NSH_LIBRARY && MMCSD && MMCSD_SPI
+	---help---
+		If board-specif NSH start-up logic will mount an SPI-based MMC/SD volume, then this setting may be needed to tell the board logic which SPI bus to use.  Default: 0 (meaning is board-specific).
+
+comment "Board-Specific Options"
+
+if ARCH_BOARD_AMBER
+source "configs/amber/Kconfig"
+endif
+if ARCH_BOARD_AVR32DEV1
+source "configs/avr32dev1/Kconfig"
+endif
+if ARCH_BOARD_C5471EVM
+source "configs/c5471evm/Kconfig"
+endif
+if ARCH_BOARD_COMPALE88
+source "configs/compal_e88/Kconfig"
+endif
+if ARCH_BOARD_COMPALE99
+source "configs/compal_e99/Kconfig"
+endif
+if ARCH_BOARD_DEMOS92S12NEC64
+source "configs/demo9s12ne64/Kconfig"
+endif
+if ARCH_BOARD_EA3131
+source "configs/ea3131/Kconfig"
+endif
+if ARCH_BOARD_EA3152
+source "configs/ea3152/Kconfig"
+endif
+if ARCH_BOARD_EAGLE100
+source "configs/eagle100/Kconfig"
+endif
+if ARCH_BOARD_EKK_LM3S9B96
+source "configs/ekk-lm3s9b96/Kconfig"
+endif
+if ARCH_BOARD_EZ80F910200KITG
+source "configs/ez80f910200kitg/Kconfig"
+endif
+if ARCH_BOARD_EZ80F910200ZCO
+source "configs/ez80f910200zco/Kconfig"
+endif
+if ARCH_BOARD_FIRE_STM32
+source "configs/fire-stm32v2/Kconfig"
+endif
+if ARCH_BOARD_HYMINI_STM32V
+source "configs/hymini-stm32v/Kconfig"
+endif
+if ARCH_BOARD_KWIKSTIK_K40
+source "configs/kwikstik-k40/Kconfig"
+endif
+if ARCH_BOARD_LINCOLN60
+source "configs/lincoln60/Kconfig"
+endif
+if ARCH_BOARD_LM3S6432S2E
+source "configs/lm3s6432-s2e/Kconfig"
+endif
+if ARCH_BOARD_LM3S6965EK
+source "configs/lm3s6965-ek/Kconfig"
+endif
+if ARCH_BOARD_LM3S8962EK
+source "configs/lm3s8962-ek/Kconfig"
+endif
+if ARCH_BOARD_LPC4330_XPLORER
+source "configs/lpc4330-xplorer/Kconfig"
+endif
+if ARCH_BOARD_LPCXPRESSO
+source "configs/lpcxpresso-lpc1768/Kconfig"
+endif
+if ARCH_BOARD_M68332EVB
+source "configs/m68332evb/Kconfig"
+endif
+if ARCH_BOARD_MBED
+source "configs/mbed/Kconfig"
+endif
+if ARCH_BOARD_MCU123
+source "configs/mcu123-lpc214x/Kconfig"
+endif
+if ARCH_BOARD_MICROPENDOUS3
+source "configs/micropendous3/Kconfig"
+endif
+if ARCH_BOARD_MIRTOO
+source "configs/mirtoo/Kconfig"
+endif
+if ARCH_BOARD_MX1ADS
+source "configs/mx1ads/Kconfig"
+endif
+if ARCH_BOARD_NE64BADGE
+source "configs/ne64badge/Kconfig"
+endif
+if ARCH_BOARD_NTOSD_DM320
+source "configs/ntosd-dm320/Kconfig"
+endif
+if ARCH_BOARD_NUCLEUS2G
+source "configs/nucleus2g/Kconfig"
+endif
+if ARCH_BOARD_NUTINY_NUC120
+source "configs/nutiny-nuc120/Kconfig"
+endif
+if ARCH_BOARD_LPC1766STK
+source "configs/olimex-lpc1766stk/Kconfig"
+endif
+if ARCH_BOARD_OLIMEXLPC2378
+source "configs/olimex-lpc2378/Kconfig"
+endif
+if ARCH_BOARD_OLIMEX_STM32P107
+source "configs/olimex-stm32-p107/Kconfig"
+endif
+if ARCH_BOARD_OLIMEX_STRP711
+source "configs/olimex-strp711/Kconfig"
+endif
+if ARCH_BOARD_OPEN1788
+source "configs/open1788/Kconfig"
+endif
+if ARCH_BOARD_PCBLOGICPIC32MX
+source "configs/pcblogic-pic32mx/Kconfig"
+endif
+if ARCH_BOARD_PIC32_STARTERKIT
+source "configs/pic32-starterkit/Kconfig"
+endif
+if ARCH_BOARD_PIC32_PIC32MX7MMB
+source "configs/pic32mx7mmb/Kconfig"
+endif
+if ARCH_BOARD_PJRC_87C52
+source "configs/pjrc-8051/Kconfig"
+endif
+if ARCH_BOARD_QEMU_I486
+source "configs/qemu-i486/Kconfig"
+endif
+if ARCH_BOARD_RGMP
+source "configs/rgmp/Kconfig"
+endif
+if ARCH_BOARD_SAM3UEK
+source "configs/sam3u-ek/Kconfig"
+endif
+if ARCH_BOARD_SHENZHOU
+source "configs/shenzhou/Kconfig"
+endif
+if ARCH_BOARD_SKP16C26
+source "configs/skp16c26/Kconfig"
+endif
+if ARCH_BOARD_STM3210E_EVAL
+source "configs/stm3210e-eval/Kconfig"
+endif
+if ARCH_BOARD_STM3220G_EVAL
+source "configs/stm3220g-eval/Kconfig"
+endif
+if ARCH_BOARD_STM3240G_EVAL
+source "configs/stm3240g-eval/Kconfig"
+endif
+if ARCH_BOARD_STM32F100RC_GENERIC
+source "configs/stm32f100rc_generic/Kconfig"
+endif
+if ARCH_BOARD_STM32F4_DISCOVERY
+source "configs/stm32f4discovery/Kconfig"
+endif
+if ARCH_BOARD_SUREPIC32MX
+source "configs/sure-pic32mx/Kconfig"
+endif
+if ARCH_BOARD_TEENSY
+source "configs/teensy/Kconfig"
+endif
+if ARCH_BOARD_TWR_K60N512
+source "configs/twr-k60n512/Kconfig"
+endif
+if ARCH_BOARD_UBW32
+source "configs/ubw32/Kconfig"
+endif
+if ARCH_BOARD_US7032EVB1
+source "configs/us7032evb1/Kconfig"
+endif
+if ARCH_BOARD_VSN
+source "configs/vsn/Kconfig"
+endif
+if ARCH_BOARD_XTRS
+source "configs/xtrs/Kconfig"
+endif
+if ARCH_BOARD_Z16F2800100ZCOG
+source "configs/z16f2800100zcog/Kconfig"
+endif
+if ARCH_BOARD_Z80SIM
+source "configs/z80sim/Kconfig"
+endif
+if ARCH_BOARD_Z8ENCORE000ZCO
+source "configs/z8encore000zco/Kconfig"
+endif
+if ARCH_BOARD_Z8F64200100KIT
+source "configs/z8f64200100kit/Kconfig"
+endif
+if ARCH_BOARD_ZP214XPA
+source "configs/zp214xpa/Kconfig"
+endif
 if ARCH_BOARD_PX4FMU
 source "configs/px4fmu/Kconfig"
 endif
