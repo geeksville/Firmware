@@ -134,63 +134,20 @@ void up_initial_state(struct tcb_s *tcb)
 #endif
 #endif /* CONFIG_PIC */
 
-#ifdef CONFIG_ARMV7M_CMNVECTOR
-  /* Set privileged- or unprivileged-mode, depending on how NuttX is
-   * configured and what kind of thread is being started.
-   *
-   * If the kernel build is not selected, then all threads run in
-   * privileged thread mode.
-   *
-   * If FPU support is not configured, set the bit that indicates that
-   * the context does not include the volatile FP registers.
+  /* All tasks start via a stub function in kernel space.  So all
+   * tasks must start in privileged thread mode.  If CONFIG_NUTTX_KERNEL
+   * is defined, then that stub function will switch to unprivileged
+   * mode before transferring control to the user task.
    */
 
-  xcp->regs[REG_EXC_RETURN] = EXC_RETURN_BASE | EXC_RETURN_THREAD_MODE;
+  xcp->regs[REG_EXC_RETURN] = EXC_RETURN_PRIVTHR;
 
-#ifndef CONFIG_ARCH_FPU
-
-  xcp->regs[REG_EXC_RETURN] |= EXC_RETURN_STD_CONTEXT;
-
-#else
+#if defined(CONFIG_ARMV7M_CMNVECTOR) && defined(CONFIG_ARCH_FPU)
 
   xcp->regs[REG_FPSCR] = 0; // XXX initial FPSCR should be configurable
   xcp->regs[REG_FPReserved] = 0;
 
-#endif /* CONFIG_ARCH_FPU */
-
-#ifdef CONFIG_NUTTX_KERNEL
-  if ((tcb->flags & TCB_FLAG_TTYPE_MASK) != TCB_FLAG_TTYPE_KERNEL)
-    {
-      /* It is a normal task or a pthread.  Set user mode */
-
-      xcp->regs[REG_EXC_RETURN] |= EXC_RETURN_PROCESS_STACK;
-    }
-#endif /* CONFIG_NUTTX_KERNEL */
-
-#else /* CONFIG_ARMV7M_CMNVECTOR */
-
-  /* Set privileged- or unprivileged-mode, depending on how NuttX is
-   * configured and what kind of thread is being started.
-   *
-   * If the kernel build is not selected, then all threads run in
-   * privileged thread mode.
-   */
-
-#ifdef CONFIG_NUTTX_KERNEL
-  if ((tcb->flags & TCB_FLAG_TTYPE_MASK) == TCB_FLAG_TTYPE_KERNEL)
-    {
-      /* It is a kernel thread.. set privileged thread mode */
-
-      xcp->regs[REG_EXC_RETURN] = EXC_RETURN_PRIVTHR;
-    }
-  else
-    {
-      /* It is a normal task or a pthread.  Set user mode */
-
-      xcp->regs[REG_EXC_RETURN] = EXC_RETURN_UNPRIVTHR;
-    }
-#endif /* CONFIG_NUTTX_KERNEL */
-#endif /* CONFIG_ARMV7M_CMNVECTOR */
+#endif /* CONFIG_ARMV7M_CMNVECTOR && CONFIG_ARCH_FPU */
 
   /* Enable or disable interrupts, based on user configuration */
 
