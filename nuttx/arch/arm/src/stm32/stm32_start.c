@@ -52,6 +52,7 @@
 
 #include "stm32.h"
 #include "stm32_gpio.h"
+#include "stm32_userspace.h"
 
 #ifdef CONFIG_ARCH_FPU
 #  include "nvic.h"
@@ -210,6 +211,7 @@ void __start(void)
     {
       *dest++ = 0;
     }
+
   showprogress('B');
 
   /* Move the intialized data section from his temporary holding spot in
@@ -222,6 +224,7 @@ void __start(void)
     {
       *dest++ = *src++;
     }
+
   showprogress('C');
 
   /* Perform early serial initialization */
@@ -231,10 +234,21 @@ void __start(void)
 #endif
   showprogress('D');
 
+  /* For the case of the separate user-/kernel-space build, perform whatever
+   * platform specific initialization of the user memory is required.
+   * Normally this just means initializing the user space .data and .bss
+   * segments.
+   */
+
+#ifdef CONFIG_NUTTX_KERNEL
+  stm32_userspace();
+  showprogress('E');
+#endif
+
   /* Initialize onboard resources */
 
   stm32_boardinitialize();
-  showprogress('E');
+  showprogress('F');
 
   /* Then start NuttX */
 
