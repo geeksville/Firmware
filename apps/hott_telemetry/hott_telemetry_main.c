@@ -61,7 +61,7 @@
 #include <arch/board/board.h>
 #include "up_arch.h"
 #include "chip.h"
-#include "stm32_internal.h"
+#include "stm32.h"
 
 static int thread_should_exit = false;		/**< Deamon exit flag */
 static int thread_running = false;		/**< Deamon status flag */
