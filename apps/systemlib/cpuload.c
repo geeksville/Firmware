@@ -39,6 +39,7 @@
  ****************************************************************************/
 
 #include <nuttx/config.h>
+#include <nuttx/sched.h>
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -63,9 +64,9 @@
  * Public Functions
  ****************************************************************************/
 
-__EXPORT void sched_note_start(FAR _TCB *tcb);
-__EXPORT void sched_note_stop(FAR _TCB *tcb);
-__EXPORT void sched_note_switch(FAR _TCB *pFromTcb, FAR _TCB *pToTcb);
+__EXPORT void sched_note_start(FAR struct tcb_s *tcb);
+__EXPORT void sched_note_stop(FAR struct tcb_s *tcb);
+__EXPORT void sched_note_switch(FAR struct tcb_s *pFromTcb, FAR struct tcb_s *pToTcb);
 
 /****************************************************************************
  * Name:
@@ -73,7 +74,7 @@ __EXPORT void sched_note_switch(FAR _TCB *pFromTcb, FAR _TCB *pToTcb);
 
 __EXPORT struct system_load_s system_load;
 
-extern FAR _TCB *sched_gettcb(pid_t pid);
+extern FAR struct tcb_s *sched_gettcb(pid_t pid);
 
 void cpuload_initialize_once()
 {
@@ -109,7 +110,7 @@ void cpuload_initialize_once()
 	//	}
 }
 
-void sched_note_start(FAR _TCB *tcb)
+void sched_note_start(FAR struct tcb_s *tcb)
 {
 	/* search first free slot */
 	int i;
@@ -128,7 +129,7 @@ void sched_note_start(FAR _TCB *tcb)
 	}
 }
 
-void sched_note_stop(FAR _TCB *tcb)
+void sched_note_stop(FAR struct tcb_s *tcb)
 {
 	int i;
 
@@ -145,7 +146,7 @@ void sched_note_stop(FAR _TCB *tcb)
 	}
 }
 
-void sched_note_switch(FAR _TCB *pFromTcb, FAR _TCB *pToTcb)
+void sched_note_switch(FAR struct tcb_s *pFromTcb, FAR struct tcb_s *pToTcb)
 {
 	uint64_t new_time = hrt_absolute_time();
 

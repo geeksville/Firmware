@@ -43,7 +43,7 @@ struct system_load_taskinfo_s {
 	uint64_t total_runtime;      ///< Runtime since start (start_time - total_runtime)/(start_time - current_time) = load
 	uint64_t curr_start_time;     ///< Start time of the current scheduling slot
 	uint64_t start_time;         ///< FIRST start time of task
-	FAR struct _TCB *tcb;               ///<
+	FAR struct tcb_s *tcb;               ///<
 	bool valid;                  ///< Task is currently active / valid
 };
 

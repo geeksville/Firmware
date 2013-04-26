@@ -61,7 +61,7 @@ const char *
 getprogname(void)
 {
 #if CONFIG_TASK_NAME_SIZE > 0
-	_TCB	*thisproc = sched_self();
+	struct tcb_s	*thisproc = sched_self();
 
 	return thisproc->name;
 #else
