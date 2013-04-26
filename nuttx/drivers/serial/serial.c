@@ -434,7 +434,7 @@ static ssize_t uart_write(FAR struct file *filep, FAR const char *buffer, size_t
 
           if ((ch == '\n') && (dev->tc_oflag & (ONLCR | ONLRET)))
             {
-              ret = uart_putxmitchar(dev, '\r');
+	      ret = uart_putxmitchar(dev, '\r', oktoblock);
 
               if (ret != OK)
                 { 
@@ -452,20 +452,9 @@ static ssize_t uart_write(FAR struct file *filep, FAR const char *buffer, size_t
 
         }
 
-#else /* !CONFIG_SERIAL_TERMIOS */
-
-      /* If this is the console, convert \n -> \r\n */
-
-      if (dev->isconsole && ch == '\n')
-        {
-          ret = uart_putxmitchar(dev, '\r');
-        }
-
-#endif
-
       /* Put the character into the transmit buffer */
 
-      ret = uart_putxmitchar(dev, ch);
+      ret = uart_putxmitchar(dev, ch, oktoblock);
 
       if (ret != OK)
         { 
