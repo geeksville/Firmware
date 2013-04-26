@@ -40,7 +40,6 @@
 #include <nuttx/config.h>
 
 #include <sys/types.h>
-#include <sys/ioctl.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
@@ -325,7 +324,6 @@ static ssize_t uart_write(FAR struct file *filep, FAR const char *buffer, size_t
   ssize_t           nread  = buflen;
   bool              oktoblock;
   int               ret;
-  char              ch;
 
   /* We may receive console writes through this path from interrupt handlers and
    * from debug output in the IDLE task!  In these cases, we will need to do things
@@ -368,7 +366,8 @@ static ssize_t uart_write(FAR struct file *filep, FAR const char *buffer, size_t
   if (ret < 0)
     {
       /* A signal received while waiting for access to the xmit.head will
-       * abort the transfer.
+       * abort the transfer.  After the transfer has started, we are committed
+       * and signals will be ignored.
        */
 
       return ret;
@@ -402,9 +401,9 @@ static ssize_t uart_write(FAR struct file *filep, FAR const char *buffer, size_t
   uart_disabletxint(dev);
   for (; buflen; buflen--)
     {
-      ch = *buffer++;
+      int ch = *buffer++;
 
-      /* Do output post-processing */
+      /* If this is the console, then we should replace LF with CR-LF */
 
       ret = OK;
       if (dev->isconsole && ch == '\n')
@@ -412,8 +411,7 @@ static ssize_t uart_write(FAR struct file *filep, FAR const char *buffer, size_t
           ret = uart_putxmitchar(dev, '\r', oktoblock);
         }
 
-      if (dev->tc_oflag & OPOST)
-        { 
+      /* Put the character into the transmit buffer */
 
       if (ret == OK)
         {
@@ -430,37 +428,32 @@ static ssize_t uart_write(FAR struct file *filep, FAR const char *buffer, size_t
        * TX buffer is full.
        */
 
-          /* Are we interested in newline processing? */
+      if (ret < 0)
+        {
+          /* POSIX requires that we return -1 and errno set if no data was
+           * transferred.  Otherwise, we return the number of bytes in the
+           * interrupted transfer.
+           */
 
-          if ((ch == '\n') && (dev->tc_oflag & (ONLCR | ONLRET)))
+          if (buflen < nread)
             {
-	      ret = uart_putxmitchar(dev, '\r', oktoblock);
+              /* Some data was transferred.  Return the number of bytes that
+               * were successfully transferred.
+               */
 
-              if (ret != OK)
-                { 
-                  break;
-                }
+              nread -= buflen;
+            }
+          else
+            {
+              /* No data was transferred. Return the negated errno value.
+               * The VFS layer will set the errno value appropriately).
+               */
+ 
+              nread = ret;
             }
 
-            /* Specifically not handled:
-             *
-             * OXTABS - primarily a full-screen terminal optimisation
-             * ONOEOT - Unix interoperability hack
-             * OLCUC - Not specified by Posix
-             * ONOCR - low-speed interactive optimisation
-             */
-
-        }
-
-      /* Put the character into the transmit buffer */
-
-      ret = uart_putxmitchar(dev, ch, oktoblock);
-
-      if (ret != OK)
-        { 
           break;
         }
-
     }
 
   if (dev->xmit.head != dev->xmit.tail)
@@ -469,40 +462,6 @@ static ssize_t uart_write(FAR struct file *filep, FAR const char *buffer, size_t
     }
 
   uart_givesem(&dev->xmit.sem);
-
-   /* uart_putxmitchar() might return an error under one of two
-    * conditions:  (1) The wait for buffer space might have been
-    * interrupted by a signal (ret should be -EINTR), or (2) if
-    * CONFIG_SERIAL_REMOVABLE is defined, then uart_putxmitchar()
-    * might also return if the serial device was disconnected
-    * (wtih -ENOTCONN).
-    */
-
-  if (ret < 0)
-    {
-      /* POSIX requires that we return -1 and errno set if no data was
-       * transferred.  Otherwise, we return the number of bytes in the
-       * interrupted transfer.
-       */
-
-      if (buflen < nread)
-        {
-          /* Some data was transferred.  Return the number of bytes that were
-           * successfully transferred.
-           */
-
-          nread -= buflen;
-        }
-      else
-        {
-          /* No data was transferred. Return the negated error.  The VFS layer
-           * will set the errno value appropriately).
-           */
-  
-          nread = -ret;
-        }
-    }
-
   return nread;
 }
 
@@ -518,7 +477,6 @@ static ssize_t uart_read(FAR struct file *filep, FAR char *buffer, size_t buflen
   ssize_t           recvd = 0;
   int16_t           tail;
   int               ret;
-  char              ch;
 
   /* Only one user can access dev->recv.tail at a time */
 
@@ -572,7 +530,8 @@ static ssize_t uart_read(FAR struct file *filep, FAR char *buffer, size_t buflen
         {
           /* Take the next character from the tail of the buffer */
 
-          ch = dev->recv.buffer[tail];
+          *buffer++ = dev->recv.buffer[tail];
+          recvd++;
 
           /* Increment the tail index.  Most operations are done using the
            * local variable 'tail' so that the final dev->recv.tail update
@@ -585,49 +544,6 @@ static ssize_t uart_read(FAR struct file *filep, FAR char *buffer, size_t buflen
             }
 
           dev->recv.tail = tail;
-
-#ifdef CONFIG_SERIAL_TERMIOS
-
-          /* Do input processing if any is enabled */
-
-          if (dev->tc_iflag & (INLCR | IGNCR | ICRNL))
-            { 
-
-              /* \n -> \r or \r -> \n translation? */
-
-              if ((ch == '\n') && (dev->tc_iflag & INLCR))
-                {
-                  ch = '\r';
-                }
-              else if ((ch == '\r') && (dev->tc_iflag & ICRNL))
-                {
-                  ch = '\n';
-                }
-
-              /* discarding \r ? */
-              if ((ch == '\r') & (dev->tc_iflag & IGNCR))
-                { 
-                  continue;
-                }
-
-            }
-
-          /* Specifically not handled:
-           *
-           * All of the local modes; echo, line editing, etc.
-           * Anything to do with break or parity errors.
-           * ISTRIP - we should be 8-bit clean.
-           * IUCLC - Not Posix
-           * IXON/OXOFF - no xon/xoff flow control.
-           */
-
-#endif
-
-          /* store the received character */
-
-          *buffer++ = ch;
-          recvd++;
-
         }
 
 #ifdef CONFIG_DEV_SERIAL_FULLBLOCKS
@@ -782,118 +698,7 @@ static int uart_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
   FAR struct inode *inode = filep->f_inode;
   FAR uart_dev_t   *dev   = inode->i_private;
 
-  /* Handle TTY-level IOCTLs here */
-  /* Let low-level driver handle the call first */
-
-  int ret = dev->ops->ioctl(filep, cmd, arg);
-
-  /*
-   * The device ioctl() handler returns -ENOTTY when it doesn't know
-   * how to handle the command. Check if we can handle it here.
-   */
-  if (ret == -ENOTTY)
-    {
-      switch (cmd)
-        {
-
-          case FIONREAD:
-          {
-            int count;
-            irqstate_t state = irqsave();
-
-            /* determine the number of bytes available in the buffer */
-
-            if (dev->recv.tail <= dev->recv.head)
-              { 
-                count = dev->recv.head - dev->recv.tail;
-              }
-            else
-              {
-                count = dev->recv.size - (dev->recv.tail - dev->recv.head);
-              }
-
-            irqrestore(state);
-
-            *(int *)arg = count;
-            ret = 0;
-
-            break;
-          }
-
-          case FIONWRITE:
-          {
-            int count;
-            irqstate_t state = irqsave();
-
-            /* determine the number of bytes free in the buffer */
-
-            if (dev->xmit.head < dev->xmit.tail)
-              { 
-                count = dev->xmit.tail - dev->xmit.head - 1;
-              }
-            else
-              {
-                count = dev->xmit.size - (dev->xmit.head - dev->xmit.tail) - 1;
-              }
-
-            irqrestore(state);
-
-            *(int *)arg = count;
-            ret = 0;
-
-            break;
-          }
-        }
-    }
-
-  /* Append any higher level TTY flags */
-
-  else if (ret == OK)
-    {
-      switch (cmd)
-        {
-#ifdef CONFIG_SERIAL_TERMIOS
-          case TCGETS:
-          {
-            struct termios *termiosp = (struct termios*)arg;
-
-            if (!termiosp)
-              {
-                ret = -EINVAL;
-                break;
-              }
-
-            /* and update with flags from this layer */
-
-            termiosp->c_iflag = dev->tc_iflag;
-            termiosp->c_oflag = dev->tc_oflag;
-            termiosp->c_lflag = dev->tc_lflag;
-          }
-
-          break;
-
-        case TCSETS:
-          {
-            struct termios *termiosp = (struct termios*)arg;
-
-            if (!termiosp)
-              {
-                ret = -EINVAL;
-                break;
-              }
-
-            /* update the flags we keep at this layer */
-
-            dev->tc_iflag = termiosp->c_iflag;
-            dev->tc_oflag = termiosp->c_oflag;
-            dev->tc_lflag = termiosp->c_lflag;
-          }
-
-          break;
-#endif
-        }
-    }
-  return ret;
+  return dev->ops->ioctl(filep, cmd, arg);
 }
 
 /****************************************************************************
@@ -1205,25 +1010,6 @@ static int uart_open(FAR struct file *filep)
       dev->recv.head = 0;
       dev->recv.tail = 0;
 
-      /* initialise termios state */
-
-#ifdef CONFIG_SERIAL_TERMIOS
-
-      dev->tc_iflag = 0;
-      if (dev->isconsole == true)
-        {
-
-          /* enable \n -> \r\n translation for the console */
-
-          dev->tc_oflag = OPOST | ONLCR;
-        }
-      else
-        {
-          dev->tc_oflag = 0;
-        }
-
-#endif
-
       /* Enable the RX interrupt */
 
       uart_enablerxint(dev);
@@ -1260,21 +1046,6 @@ int uart_register(FAR const char *path, FAR uart_dev_t *dev)
   sem_init(&dev->recvsem,  0, 0);
 #ifndef CONFIG_DISABLE_POLL
   sem_init(&dev->pollsem,  0, 1);
-#endif
-
-  /* Setup termios flags */
-
-#ifdef CONFIG_SERIAL_TERMIOS
-
-  if (dev->isconsole == true)
-    {
-
-      /* enable \n -> \r\n translation for the console as early as possible */
-
-      dev->tc_oflag = OPOST | ONLCR;
-      dev->tc_iflag = 0;
-    }
-
 #endif
 
   dbg("Registering %s\n", path);
