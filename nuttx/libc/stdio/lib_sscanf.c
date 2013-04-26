@@ -248,33 +248,6 @@ int vsscanf(FAR char *buf, FAR const char *fmt, va_list ap)
                   fmt--;
                 }
             }
-            
-            /* Process %n:  Character count */
-            
-            if (*fmt == 'n')
-            {
-                lvdbg("vsscanf: Performing character count\n");
-                
-                if (!noassign)
-                {
-                    size_t nchars = (size_t)(buf - bufstart);
-                    
-                    if (lflag)
-                    {
-                        long *plong = va_arg(ap, long*);
-                        *plong = (long)nchars;
-                    }
-                    else
-                    {
-                        int *pint = va_arg(ap, int*);
-                        *pint = (int)nchars;
-                    }
-                }
-            } else {
-                
-            /* Check for valid data in input string */
-            if (!(*buf))
-                break;
 
           /* Process %s:  String conversion */
 
