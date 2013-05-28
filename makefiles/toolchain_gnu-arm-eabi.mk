@@ -51,6 +51,7 @@ OBJDUMP			 = $(CROSSDEV)objdump
 # XXX this is pulled pretty directly from the fmu Make.defs - needs cleanup
 
 MAXOPTIMIZATION		 ?= -O3
+SPACEOPTIMIZATION	 ?= -Os
 
 # Base CPU flags for each of the supported architectures.
 #
@@ -87,15 +88,15 @@ endif
 
 # optimisation flags
 #
-ARCHOPTIMIZATION	 = $(MAXOPTIMIZATION) \
+ARCHOPTIMIZATION	 = $(SPACEOPTIMIZATION) \
 			   -g \
 			   -fno-strict-aliasing \
 			   -fno-strength-reduce \
 			   -fomit-frame-pointer \
-   			   -funsafe-math-optimizations \
-   			   -fno-builtin-printf \
-   			   -ffunction-sections \
-   			   -fdata-sections
+			   -funsafe-math-optimizations \
+			   -fno-builtin-printf \
+			   -ffunction-sections \
+			   -fdata-sections
 
 # enable precise stack overflow tracking
 # note - requires corresponding support in NuttX
