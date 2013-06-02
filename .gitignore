@@ -21,6 +21,7 @@ Make.dep
 *.dSYM
 Images/*.bin
 Images/*.px4
+makefiles/build
 nuttx/Make.defs
 nuttx/setenv.sh
 nuttx/arch/arm/include/board
@@ -57,6 +58,7 @@ core
 mkdeps
 Archives
 Build
+ROMFS/img
 !ROMFS/*/*.d
 !ROMFS/*/*/*.d
 !ROMFS/*/*/*/*.d
