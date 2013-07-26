@@ -411,7 +411,9 @@ PX4IO::init()
 	unsigned protocol = io_reg_get(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_PROTOCOL_VERSION);
 	if (protocol != PX4IO_PROTOCOL_VERSION) {
 		log("protocol/firmware mismatch");
+#ifndef ARDUPILOT_BUILD
 		mavlink_log_emergency(_mavlink_fd, "[IO] protocol/firmware mismatch, abort.");
+#endif
 		return -1;
 	}
 	_hardware      = io_reg_get(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_HARDWARE_VERSION);
@@ -426,7 +428,9 @@ PX4IO::init()
 	    (_max_rc_input < 1)  || (_max_rc_input > 255)) {
 
 		log("config read error");
+#ifndef ARDUPILOT_BUILD
 		mavlink_log_emergency(_mavlink_fd, "[IO] config read fail, abort.");
+#endif
 		return -1;
 	}
 	if (_max_rc_input > RC_INPUT_MAX_CHANNELS)
@@ -453,7 +457,9 @@ PX4IO::init()
 	if ((reg & PX4IO_P_SETUP_ARMING_INAIR_RESTART_OK) &&
 	    (reg & PX4IO_P_SETUP_ARMING_FMU_ARMED)) {
 
-	    	mavlink_log_emergency(_mavlink_fd, "[IO] RECOVERING FROM FMU IN-AIR RESTART");
+#ifndef ARDUPILOT_BUILD
+                mavlink_log_emergency(_mavlink_fd, "[IO] RECOVERING FROM FMU IN-AIR RESTART");
+#endif
 
 		/* WARNING: COMMANDER app/vehicle status must be initialized.
 		 * If this fails (or the app is not started), worst-case IO
@@ -543,7 +549,9 @@ PX4IO::init()
 		ret = io_set_rc_config();
 		if (ret != OK) {
 			log("failed to update RC input config");
-			mavlink_log_info(_mavlink_fd, "[IO] RC config upload fail");
+#ifndef ARDUPILOT_BUILD
+                        mavlink_log_info(_mavlink_fd, "[IO] RC config upload fail");
+#endif
 			return ret;
 		}
 
@@ -565,7 +573,9 @@ PX4IO::init()
 		return -errno;
 	}
 
+#ifndef ARDUPILOT_BUILD
 	mavlink_log_info(_mavlink_fd, "[IO] init ok");
+#endif
 
 	return OK;
 }
@@ -1254,11 +1264,15 @@ PX4IO::mixer_send(const char *buf, unsigned buflen)
 	/* check for the mixer-OK flag */
 	if (io_reg_get(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS) & PX4IO_P_STATUS_FLAGS_MIXER_OK) {
 		debug("mixer upload OK");
+#ifndef ARDUPILOT_BUILD
 		mavlink_log_info(_mavlink_fd, "[IO] mixer upload ok");
+#endif
 		return 0;
 	} else {
 		debug("mixer rejected by IO");
+#ifndef ARDUPILOT_BUILD
 		mavlink_log_info(_mavlink_fd, "[IO] mixer upload fail");
+#endif
 	}
 
 	/* load must have failed for some reason */
