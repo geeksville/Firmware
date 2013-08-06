@@ -82,6 +82,7 @@ PX4IO_Uploader::upload(const char *filenames[])
 #error Must define PX4IO_SERIAL_DEVICE in board configuration to support firmware upload
 #endif
 
+        log("log updating on %s", PX4IO_SERIAL_DEVICE);
 	_io_fd = open(PX4IO_SERIAL_DEVICE, O_RDWR);
 
 	if (_io_fd < 0) {
