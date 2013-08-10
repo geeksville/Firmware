@@ -1,5 +1,6 @@
 target remote :3333
 mon init
+mon stm32_init
 # mon reset halt
 mon poll
 mon cortex_m maskisr auto
