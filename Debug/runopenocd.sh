@@ -1,1 +1,1 @@
-openocd -f interface/olimex-arm-usb-ocd-h.cfg -f stm32f4x.cfg
+openocd -f interface/olimex-arm-usb-ocd-h.cfg -f px4fmu-v1-board.cfg
