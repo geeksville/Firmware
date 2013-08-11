@@ -1,5 +1,15 @@
 target remote :3333
+
+# Don't let GDB get confused while stepping
+define hook-step
+  mon cortex_m maskisr on
+end
+define hookpost-step
+  mon cortex_m maskisr off
+end
+
 mon init
+mon flash probe 0
 mon stm32_init
 # mon reset halt
 mon poll
