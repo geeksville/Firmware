@@ -38,10 +38,10 @@
 MODULE_NAME		 = lua
 MODULE_STACKSIZE	 = 8000
 
-LUASRC		 = lib
+LUASRC		= lib
 
 # base sources
-CSRCS		 = $(LUASRC)/lapi.c $(LUASRC)/lcode.c $(LUASRC)/lctype.c \
+SRCS		 += $(LUASRC)/lapi.c $(LUASRC)/lcode.c $(LUASRC)/lctype.c \
 		   $(LUASRC)/ldebug.c $(LUASRC)/ldo.c $(LUASRC)/ldump.c \
 		   $(LUASRC)/lfunc.c $(LUASRC)/lgc.c $(LUASRC)/llex.c \
 		   $(LUASRC)/lmem.c $(LUASRC)/lobject.c $(LUASRC)/lopcodes.c \
@@ -51,19 +51,19 @@ CSRCS		 = $(LUASRC)/lapi.c $(LUASRC)/lcode.c $(LUASRC)/lctype.c \
 		   $(LUASRC)/loadlib.c
 
 # libraries
-CSRCS		+= $(LUASRC)/lauxlib.c
-CSRCS		+= $(LUASRC)/lbaselib.c
-CSRCS		+= $(LUASRC)/lbitlib.c
-CSRCS		+= $(LUASRC)/lcorolib.c
-CSRCS		+= $(LUASRC)/ldblib.c
-CSRCS		+= $(LUASRC)/liolib.c
-CSRCS		+= $(LUASRC)/lmathlib.c
-CSRCS		+= $(LUASRC)/lstrlib.c
-CSRCS		+= $(LUASRC)/ltablib.c
-CSRCS		+= $(LUASRC)/loslib.c
+SRCS		+= $(LUASRC)/lauxlib.c
+SRCS		+= $(LUASRC)/lbaselib.c
+SRCS		+= $(LUASRC)/lbitlib.c
+SRCS		+= $(LUASRC)/lcorolib.c
+SRCS		+= $(LUASRC)/ldblib.c
+SRCS		+= $(LUASRC)/liolib.c
+SRCS		+= $(LUASRC)/lmathlib.c
+SRCS		+= $(LUASRC)/lstrlib.c
+SRCS		+= $(LUASRC)/ltablib.c
+SRCS		+= $(LUASRC)/loslib.c
 
 # compatibility layer and shell
-CSRCS		+= nuttx_lua_compat.c \
+SRCS		+= nuttx_lua_compat.c \
 		   lua.c
 
 # INCLUDES	 = $(LUASRC) $(APPDIR)/systemlib/linenoise

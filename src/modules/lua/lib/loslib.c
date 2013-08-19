@@ -212,9 +212,11 @@ static int os_date (lua_State *L) {
     setfield(L, "day", stm->tm_mday);
     setfield(L, "month", stm->tm_mon+1);
     setfield(L, "year", stm->tm_year+1900);
+#ifndef LUA_TIME_BUSTED
     setfield(L, "wday", stm->tm_wday+1);
     setfield(L, "yday", stm->tm_yday+1);
     setboolfield(L, "isdst", stm->tm_isdst);
+#endif
   }
   else {
     char cc[4];
@@ -252,7 +254,9 @@ static int os_time (lua_State *L) {
     ts.tm_mday = getfield(L, "day", -1);
     ts.tm_mon = getfield(L, "month", -1) - 1;
     ts.tm_year = getfield(L, "year", -1) - 1900;
+#ifndef LUA_TIME_BUSTED
     ts.tm_isdst = getboolfield(L, "isdst");
+#endif
     t = mktime(&ts);
   }
   if (t == (time_t)(-1))

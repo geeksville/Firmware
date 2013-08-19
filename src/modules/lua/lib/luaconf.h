@@ -19,6 +19,12 @@
 */
 
 
+// Changes for PX4/Nuttx
+#include "../nuttx_lua_compat.h"
+
+// Nuttx doesn't have a full time struct
+#define LUA_TIME_BUSTED
+
 /*
 @@ LUA_ANSI controls the use of non-ansi features.
 ** CHANGE it (define it) if you want Lua to avoid the use of any
@@ -250,13 +256,13 @@
 @@ LUA_COMPAT_UNPACK controls the presence of global 'unpack'.
 ** You can replace it with 'table.unpack'.
 */
-#define LUA_COMPAT_UNPACK
+#undef LUA_COMPAT_UNPACK
 
 /*
 @@ LUA_COMPAT_LOADERS controls the presence of table 'package.loaders'.
 ** You can replace it with 'package.searchers'.
 */
-#define LUA_COMPAT_LOADERS
+#undef LUA_COMPAT_LOADERS
 
 /*
 @@ macro 'lua_cpcall' emulates deprecated function lua_cpcall.
@@ -272,18 +278,18 @@
 @@ LUA_COMPAT_LOG10 defines the function 'log10' in the math library.
 ** You can rewrite 'log10(x)' as 'log(x, 10)'.
 */
-#define LUA_COMPAT_LOG10
+#undef LUA_COMPAT_LOG10
 
 /*
 @@ LUA_COMPAT_LOADSTRING defines the function 'loadstring' in the base
 ** library. You can rewrite 'loadstring(s)' as 'load(s)'.
 */
-#define LUA_COMPAT_LOADSTRING
+#undef LUA_COMPAT_LOADSTRING
 
 /*
 @@ LUA_COMPAT_MAXN defines the function 'maxn' in the table library.
 */
-#define LUA_COMPAT_MAXN
+#undef LUA_COMPAT_MAXN
 
 /*
 @@ The following macros supply trivial compatibility for some
@@ -353,11 +359,7 @@
 ** its only purpose is to stop Lua to consume unlimited stack
 ** space (and to reserve some numbers for pseudo-indices).
 */
-#if LUAI_BITSINT >= 32
-#define LUAI_MAXSTACK		1000000
-#else
-#define LUAI_MAXSTACK		15000
-#endif
+#define LUAI_MAXSTACK		8000
 
 /* reserve some space for error handling */
 #define LUAI_FIRSTPSEUDOIDX	(-LUAI_MAXSTACK - 1000)
@@ -369,7 +371,7 @@
 @@ LUAL_BUFFERSIZE is the buffer size used by the lauxlib buffer system.
 ** CHANGE it if it uses too much C-stack space.
 */
-#define LUAL_BUFFERSIZE		BUFSIZ
+#define LUAL_BUFFERSIZE		64
 
 
 
@@ -384,7 +386,7 @@
 */
 
 #define LUA_NUMBER_DOUBLE
-#define LUA_NUMBER	double
+#define LUA_NUMBER	float
 
 /*
 @@ LUAI_UACNUMBER is the result of an 'usual argument conversion'
@@ -399,8 +401,8 @@
 @@ lua_number2str converts a number to a string.
 @@ LUAI_MAXNUMBER2STR is maximum size of previous conversion.
 */
-#define LUA_NUMBER_SCAN		"%lf"
-#define LUA_NUMBER_FMT		"%.14g"
+#define LUA_NUMBER_SCAN		"%f"
+#define LUA_NUMBER_FMT		"%.6f"
 #define lua_number2str(s,n)	sprintf((s), LUA_NUMBER_FMT, (n))
 #define LUAI_MAXNUMBER2STR	32 /* 16 digits, sign, point, and \0 */
 

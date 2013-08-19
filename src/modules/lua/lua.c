@@ -12,10 +12,10 @@
 
 #define lua_c
 
-#include "lua.h"
+#include "lib/lua.h"
 
-#include "lauxlib.h"
-#include "lualib.h"
+#include "lib/lauxlib.h"
+#include "lib/lualib.h"
 
 
 #if !defined(LUA_PROMPT)
