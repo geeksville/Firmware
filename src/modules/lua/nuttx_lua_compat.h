@@ -1,6 +1,5 @@
 
 #include <stdio.h>
-#include <unistd.h>	// for SEEK_*, should be in stdio.h
 
 #define LUA_NUTTX
 
