@@ -35,7 +35,7 @@
 # LUA library and command
 #
 
-MODULE_NAME		 = lua
+MODULE_COMMAND		 = lua
 MODULE_STACKSIZE	 = 8000
 
 LUASRC		= lib
@@ -48,7 +48,7 @@ SRCS		 += $(LUASRC)/lapi.c $(LUASRC)/lcode.c $(LUASRC)/lctype.c \
 		   $(LUASRC)/lparser.c $(LUASRC)/lstate.c $(LUASRC)/lstring.c \
 		   $(LUASRC)/ltable.c $(LUASRC)/ltm.c $(LUASRC)/lundump.c \
 		   $(LUASRC)/lvm.c $(LUASRC)/lzio.c $(LUASRC)/linit.c \
-		   $(LUASRC)/loadlib.c
+		   $(LUASRC)/loadlib.c setjmp.S
 
 # libraries
 SRCS		+= $(LUASRC)/lauxlib.c
