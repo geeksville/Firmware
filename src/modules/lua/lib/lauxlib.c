@@ -917,15 +917,27 @@ LUALIB_API const char *luaL_gsub (lua_State *L, const char *s, const char *p,
 
 
 static void *l_alloc (void *ud, void *ptr, size_t osize, size_t nsize) {
-  (void)ud; (void)osize;  /* not used */
+  (void)ud; /* not used */
+  //printf("alloc %p %d %d\n", ptr, osize, nsize);
+
   if (nsize == 0) {
-    free(ptr);
+	if(ptr)
+	  msheap_free(ptr);
     return NULL;
   }
-  else
-    return realloc(ptr, nsize);
-}
+  else {
+	// FIXME, enhance msheap lib so it understands realloc (and properly _shrinks_ existing buffers)
+	void *dest = msheap_alloc(nsize);
+	if(dest && ptr) {
+	  if(nsize > osize)
+		nsize = osize;
 
+	  memcpy(dest, ptr, nsize);
+	  msheap_free(ptr);
+	}
+    return dest;
+  }
+}
 
 static int panic (lua_State *L) {
   luai_writestringerror("PANIC: unprotected error in call to Lua API (%s)\n",
@@ -935,6 +947,15 @@ static int panic (lua_State *L) {
 
 
 LUALIB_API lua_State *luaL_newstate (void) {
+
+  // PX4: We currently place all lua states into one shared C heap - to isolate lua processes
+  // from the rest of the system.  Eventually it would be possible to pass in the heap ptr to newstate
+	if(!msheap_isinit()) {
+#define LUAHEAP_SIZE (96 * 1024)
+		uint8_t *buf = malloc(LUAHEAP_SIZE);
+		msheap_init(buf, buf + LUAHEAP_SIZE);
+	}
+
   lua_State *L = lua_newstate(l_alloc, NULL);
   if (L) lua_atpanic(L, &panic);
   return L;

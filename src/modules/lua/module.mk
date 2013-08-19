@@ -63,7 +63,7 @@ SRCS		+= $(LUASRC)/ltablib.c
 SRCS		+= $(LUASRC)/loslib.c
 
 # compatibility layer and shell
-SRCS		+= nuttx_lua_compat.c \
+SRCS		+= nuttx_lua_compat.c msheap.c \
 		   lua.c
 
 # INCLUDES	 = $(LUASRC) $(APPDIR)/systemlib/linenoise
