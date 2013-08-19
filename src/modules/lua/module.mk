@@ -68,3 +68,6 @@ SRCS		+= nuttx_lua_compat.c \
 
 # INCLUDES	 = $(LUASRC) $(APPDIR)/systemlib/linenoise
 
+# Until there is any indication speed is an issue
+MAXOPTIMIZATION	 = -Os
+
